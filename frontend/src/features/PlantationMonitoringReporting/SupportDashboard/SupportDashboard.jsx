@@ -131,12 +131,6 @@ const SupportDashboard = () => {
   const handleSaveResponse = async () => {
     const newErrors = {};
     
-<<<<<<< HEAD
-    // Basic validation - only check for required response category
-    if (!responseFormData.responseCategory) {
-      newErrors.responseCategory = "⚠️ Please select a response category";
-    }
-    
     // Enhanced validation
     if (!responseFormData.responseText.trim()) {
       newErrors.responseText = "⚠️ Response text is required";
