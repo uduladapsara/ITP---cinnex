@@ -120,6 +120,37 @@ export const useDeliveryIssues = () => {
     }
   };
 
+  // Update a delivery response
+  const updateDeliveryResponse = async (id, formData) => {
+    try {
+      const res = await http.put(`/delivery-responses/${id}`, formData);
+      await fetchDeliveryResponses();
+      setSuccessMessage("Response updated successfully");
+      setTimeout(() => setSuccessMessage(""), 5000);
+      return res.data;
+    } catch (err) {
+      console.error("❌ Failed to update response:", err.message);
+      setErrorMessage(err.response?.data?.error || "Failed to update response");
+      setTimeout(() => setErrorMessage(""), 5000);
+      throw err;
+    }
+  };
+
+  // Delete a delivery response
+  const deleteDeliveryResponse = async (id) => {
+    try {
+      await http.delete(`/delivery-responses/${id}`);
+      await fetchDeliveryResponses();
+      setSuccessMessage("Response deleted successfully");
+      setTimeout(() => setSuccessMessage(""), 5000);
+    } catch (err) {
+      console.error("❌ Failed to delete response:", err.message);
+      setErrorMessage(err.response?.data?.error || "Failed to delete response");
+      setTimeout(() => setErrorMessage(""), 5000);
+      throw err;
+    }
+  };
+
   return {
     deliveryIssues,
     deliveryResponses,
@@ -135,6 +166,8 @@ export const useDeliveryIssues = () => {
     updateDeliveryIssue,
     deleteDeliveryIssue,
     addDeliveryResponse,
+    updateDeliveryResponse,
+    deleteDeliveryResponse,
     getResponsesForIssue,
   };
 };

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { FaTruck, FaTimes, FaReply, FaCheckCircle } from 'react-icons/fa';
 
-const DeliveryResponseModal = ({ isOpen, onClose, issue, onSave }) => {
+const DeliveryResponseModal = ({ isOpen, onClose, issue, response, onSave }) => {
   const initialFormState = {
     responseText: '',
     status: 'In Progress',
@@ -14,9 +14,19 @@ const DeliveryResponseModal = ({ isOpen, onClose, issue, onSave }) => {
 
   React.useEffect(() => {
     if (isOpen) {
-      resetForm();
+      if (response) {
+        // Editing existing response
+        setFormData({
+          responseText: response.responseText || '',
+          status: response.status || 'In Progress',
+          actionTaken: response.actionTaken || '',
+        });
+      } else {
+        // New response
+        resetForm();
+      }
     }
-  }, [isOpen]);
+  }, [isOpen, response]);
 
   const resetForm = () => {
     setFormData(initialFormState);
@@ -62,7 +72,7 @@ const DeliveryResponseModal = ({ isOpen, onClose, issue, onSave }) => {
           responseText: formData.responseText,
           status: formData.status,
           actionTaken: formData.actionTaken,
-          respondedBy: 'Support Manager', // Add the responder information
+          respondedBy: 'Support Manager',
         };
 
         await onSave(responseData);
@@ -96,7 +106,7 @@ const DeliveryResponseModal = ({ isOpen, onClose, issue, onSave }) => {
                   <FaTruck className="text-white text-xl" />
                 </div>
                 <h3 className="text-xl font-bold text-white">
-                  Respond to Delivery Issue #{issue.deliveryIssueId}
+                  {response ? 'Edit Response' : 'Respond to Delivery Issue'} #{issue.deliveryIssueId}
                 </h3>
               </div>
               <button
@@ -233,7 +243,7 @@ const DeliveryResponseModal = ({ isOpen, onClose, issue, onSave }) => {
                     }`}
                   >
                     <FaReply className="mr-2" />
-                    {isSubmitting ? 'Submitting...' : 'Submit Response'}
+                    {isSubmitting ? (response ? 'Updating...' : 'Submitting...') : (response ? 'Update Response' : 'Submit Response')}
                   </button>
                 </div>
             </form>

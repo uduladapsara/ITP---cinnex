@@ -554,6 +554,25 @@ const SupportDashboard = () => {
       doc.text(rec, 14, yPosition + (index * 7));
     });
 
+    // Add signature section to the main document content
+    yPosition += recommendations.length * 7 + 20;
+    if (yPosition > pageHeight - 60) {
+      doc.addPage();
+      yPosition = 20;
+    }
+
+    doc.setFontSize(12);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(33, 33, 33);
+    doc.text('Authorized Signature:', 14, yPosition);
+    doc.line(60, yPosition + 5, 140, yPosition + 5); // Signature line
+
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(107, 114, 128);
+    doc.text('Expert Support Manager', 14, yPosition + 12);
+    doc.text(`Date: ${new Date().toLocaleDateString()}`, 14, yPosition + 20);
+
     // Professional Footer
     const footerY = pageHeight - 35;
     doc.setDrawColor(229, 231, 235);
@@ -568,17 +587,6 @@ const SupportDashboard = () => {
     doc.text('117, Sir Chittampalam A Gardinar Mawatha, Colombo 02, Sri Lanka', 14, footerY + 14);
     doc.text('Email: support@cinnex.lk | Phone: +94 11 2695279', 14, footerY + 20);
 
-    // Signature section
-    doc.setFontSize(10);
-    doc.setFont('helvetica', 'bold');
-    doc.setTextColor(33, 33, 33);
-    doc.text('Authorized Signature:', 14, footerY + 30);
-    doc.line(50, footerY + 35, 120, footerY + 35); // Signature line
-
-    doc.setFontSize(8);
-    doc.setFont('helvetica', 'normal');
-    doc.setTextColor(107, 114, 128);
-    doc.text('Expert Support Manager', 14, footerY + 42);
     // Right side footer
     doc.text('Confidential Support Analytics Report', pageWidth - 14, footerY + 8, { align: 'right' });
     doc.text(`Page ${doc.internal.getNumberOfPages()} | Generated: ${new Date().toLocaleDateString()}`, pageWidth - 14, footerY + 14, { align: 'right' });
@@ -1275,9 +1283,9 @@ const SupportDashboard = () => {
                       placeholder="Provide your expert guidance and recommendations for this issue. Include diagnosis, treatment suggestions, preventive measures, and expected outcomes..."
                       value={responseFormData.responseText}
                       onChange={(e) => {
-                        const newText = e.target.value;
-                        setResponseFormData({ ...responseFormData, responseText: newText });
-                        updateValidationProgress(newText, responseFormData.responseCategory);
+                        const filteredValue = e.target.value.replace(/[^a-zA-Z\s]/g, '');
+                        setResponseFormData({ ...responseFormData, responseText: filteredValue });
+                        updateValidationProgress(filteredValue, responseFormData.responseCategory);
                       }}
                       rows={8}
                     />
@@ -1302,6 +1310,7 @@ const SupportDashboard = () => {
                         </div>
                       </div>
                     </div>
+                    <p className="text-xs text-amber-600 font-medium mt-2">Only letters and spaces are allowed in the expert consultation.</p>
                   </div>
                   {/* Two-column layout for additional fields */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

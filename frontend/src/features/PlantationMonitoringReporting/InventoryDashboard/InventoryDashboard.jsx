@@ -7,7 +7,7 @@ import {
   deleteWithRetry,
 } from "../../../api/retry";
 import http from "../../../api/http";
-import { FaPlus, FaEdit, FaTrash, FaCheckCircle, FaTimes, FaReply, FaSave, FaBox } from "react-icons/fa";
+import { FaPlus, FaEdit, FaTrash, FaCheckCircle, FaTimes, FaReply, FaSave, FaBox, FaDownload, FaFilePdf } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 
 // Components
@@ -18,6 +18,9 @@ import InventoryGrid from "./components/InventoryGrid";
 import ConsultationsTable from "./components/ConsultationsTable";
 import HarvestBatchesTable from "./components/HarvestBatchesTable";
 import AddEditInventoryModal from "./components/AddEditInventoryModal";
+
+// PDF Generator
+import PDFGenerator from "./components/PDFGenerator";
 
 // Hooks
 import { useInventory } from "./hooks/useInventory";
@@ -67,6 +70,9 @@ const InventoryDashboard = () => {
   // Batch details modal state
   const [selectedBatch, setSelectedBatch] = useState(null);
   const [isBatchDetailsModalOpen, setIsBatchDetailsModalOpen] = useState(false);
+
+  // PDF Generator
+  const { generateInventoryPDF } = PDFGenerator();
 
   // Custom hooks
   const {
@@ -409,22 +415,24 @@ const InventoryDashboard = () => {
   };
 
   const handleReport = () => {
-    generateReport(
-      "Inventory Dashboard Report",
-      ["Item Name", "Category", "Quantity", "Unit", "Price", "Status", "Supplier", "Manufacture Date", "Expire Date"],
-      inventory.map((item) => [
-        item.name,
-        item.category,
-        item.quantity,
-        item.unit,
-        `$${parseFloat(item.price || 0).toFixed(2)}`,
-        item.status,
-        item.supplier,
-        item.manufactureDate ? new Date(item.manufactureDate).toLocaleDateString() : 'N/A',
-        item.expireDate ? new Date(item.expireDate).toLocaleDateString() : 'N/A',
-      ]),
-      "InventoryDashboardReport.pdf"
-    );
+    // Prepare inventory data for PDF generation
+    const pdfData = inventory.map(item => ({
+      itemId: item._id || 'N/A',
+      name: item.name || 'N/A',
+      category: item.category || 'N/A',
+      quantity: item.quantity || 0,
+      unit: item.unit || '',
+      price: item.price || 0,
+      status: item.status || 'N/A',
+      supplier: item.supplier || 'N/A',
+      manufactureDate: item.manufactureDate,
+      expireDate: item.expireDate,
+      description: item.description || '',
+      reorderLevel: item.reorderLevel || 0
+    }));
+
+    // Generate modern PDF report
+    generateInventoryPDF(pdfData, 'comprehensive');
   };
 
   const handleDeleteItem = async (id) => {

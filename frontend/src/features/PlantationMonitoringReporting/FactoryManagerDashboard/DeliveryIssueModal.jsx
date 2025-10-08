@@ -247,7 +247,10 @@ const DeliveryIssueModal = ({ isOpen, onClose, issueData, onSave, orders }) => {
                   </label>
                   <textarea
                     value={formData.description}
-                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                    onChange={(e) => {
+                      const value = e.target.value.replace(/[^a-zA-Z\s]/g, '');
+                      setFormData({ ...formData, description: value });
+                    }}
                     placeholder="Describe the delivery issue in detail..."
                     className="w-full px-4 py-4 border-2 border-gray-300 rounded-2xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 bg-white/90 backdrop-blur-sm transition-all duration-200 text-gray-900 resize-none shadow-sm"
                     rows={5}
@@ -258,6 +261,7 @@ const DeliveryIssueModal = ({ isOpen, onClose, issueData, onSave, orders }) => {
                     <p className="text-xs text-gray-500 font-medium">{formData.description.length} characters (minimum 10)</p>
                     <div className={`w-3 h-3 rounded-full shadow-sm ${formData.description.length >= 10 ? 'bg-emerald-400' : 'bg-red-400'}`}></div>
                   </div>
+                  <p className="text-xs text-orange-600 font-medium mt-2">Only letters and spaces are allowed in the description.</p>
                 </div>
               </div>
 
@@ -274,11 +278,15 @@ const DeliveryIssueModal = ({ isOpen, onClose, issueData, onSave, orders }) => {
                     <input
                       type="text"
                       value={formData.deliveryPerson}
-                      onChange={(e) => setFormData({ ...formData, deliveryPerson: e.target.value })}
+                      onChange={(e) => {
+                        const value = e.target.value.replace(/[^a-zA-Z\s]/g, '');
+                        setFormData({ ...formData, deliveryPerson: value });
+                      }}
                       placeholder="Enter delivery person's name"
                       className="w-full px-4 py-4 border-2 border-gray-300 rounded-2xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 bg-white/90 backdrop-blur-sm transition-all duration-200 text-gray-900 shadow-sm"
                       required
                     />
+                    <p className="text-xs text-orange-600 font-medium mt-2">Only letters and spaces are allowed.</p>
                   </div>
 
                   {/* Customer Name */}
@@ -289,10 +297,14 @@ const DeliveryIssueModal = ({ isOpen, onClose, issueData, onSave, orders }) => {
                     <input
                       type="text"
                       value={formData.customerName}
-                      onChange={(e) => setFormData({ ...formData, customerName: e.target.value })}
+                      onChange={(e) => {
+                        const value = e.target.value.replace(/[^a-zA-Z\s]/g, '');
+                        setFormData({ ...formData, customerName: value });
+                      }}
                       placeholder="Enter customer name"
                       className="w-full px-4 py-4 border-2 border-gray-300 rounded-2xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 bg-white/90 backdrop-blur-sm transition-all duration-200 text-gray-900 shadow-sm"
                     />
+                    <p className="text-xs text-orange-600 font-medium mt-2">Only letters and spaces are allowed.</p>
                   </div>
 
                   {/* Status */}

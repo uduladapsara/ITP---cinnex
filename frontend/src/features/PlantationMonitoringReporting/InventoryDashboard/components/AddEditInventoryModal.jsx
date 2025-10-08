@@ -13,6 +13,9 @@ const getFieldValidationStatus = (fieldName, value) => {
       return parseFloat(value) > 0 ? 'valid' : 'invalid';
     case 'reorderLevel':
       return parseFloat(value) >= 0 ? 'valid' : 'invalid';
+    case 'description':
+      // Only allow letters, spaces, and basic punctuation
+      return /^[a-zA-Z\s.,!?-]*$/.test(value) && value.trim().length > 0 ? 'valid' : 'invalid';
     default:
       return value ? 'valid' : 'invalid';
   }
@@ -32,6 +35,13 @@ const AddEditInventoryModal = ({
   handleNumericInput,
   handleSupplierInput
 }) => {
+  // Handler for description input - only allows letters, spaces, and basic punctuation
+  const handleDescriptionInput = (e) => {
+    const value = e.target.value;
+    // Remove any characters that are not letters, spaces, or basic punctuation
+    const filteredValue = value.replace(/[^a-zA-Z\s.,!?-]/g, '');
+    setFormData({ ...formData, description: filteredValue });
+  };
   if (!isModalOpen) return null;
 
   return (
@@ -306,14 +316,29 @@ const AddEditInventoryModal = ({
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Description
             </label>
-            <textarea
-              value={formData.description}
-              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-              className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent resize-none text-sm"
-              rows="3"
-              maxLength="500"
-              placeholder="Describe the inventory item, its quality, origin, or special characteristics (optional but recommended)"
-            ></textarea>
+            <div className="relative">
+              <textarea
+                value={formData.description}
+                onChange={handleDescriptionInput}
+                className={`w-full p-2 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent resize-none text-sm pr-8 ${
+                  errors.description ? 'border-red-300' :
+                  getFieldValidationStatus('description', formData.description) === 'valid' ? 'border-green-300' :
+                  'border-gray-300'
+                }`}
+                rows="3"
+                maxLength="500"
+                placeholder="Describe the inventory item using only letters, spaces, and basic punctuation (optional but recommended)"
+              ></textarea>
+              {formData.description && (
+                <div className="absolute right-2 top-2">
+                  {errors.description ? (
+                    <FaTimes className="text-red-500 text-xs" />
+                  ) : getFieldValidationStatus('description', formData.description) === 'valid' ? (
+                    <FaCheck className="text-green-500 text-xs" />
+                  ) : null}
+                </div>
+              )}
+            </div>
             <div className="flex justify-between mt-1">
               <div className="text-xs text-gray-500">
                 {formData.description.length}/500 characters
@@ -323,6 +348,9 @@ const AddEditInventoryModal = ({
                   {formData.description.trim().split(' ').filter(word => word.length > 0).length} words
                 </div>
               )}
+            </div>
+            <div className="text-xs text-blue-600 mt-1">
+              Only letters, spaces, and basic punctuation (.,!?- ) are allowed
             </div>
             {errors.description && (
               <p className="mt-1 text-xs text-red-600">{errors.description}</p>

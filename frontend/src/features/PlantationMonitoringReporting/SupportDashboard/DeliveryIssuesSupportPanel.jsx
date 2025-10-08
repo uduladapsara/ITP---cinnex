@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FaTruck, FaExclamationTriangle, FaSearch, FaTimes, FaReply, FaCheckCircle, FaUser } from 'react-icons/fa';
+import { FaTruck, FaExclamationTriangle, FaSearch, FaTimes, FaReply, FaCheckCircle, FaUser, FaEdit, FaTrash } from 'react-icons/fa';
 import DeliveryResponseModal from './DeliveryResponseModal';
 import { useDeliveryIssues } from '../FactoryManagerDashboard/useDeliveryIssues';
 
@@ -16,11 +16,14 @@ const DeliveryIssuesSupportPanel = () => {
     fetchDeliveryIssues,
     fetchDeliveryResponses,
     addDeliveryResponse,
+    updateDeliveryResponse,
+    deleteDeliveryResponse,
     getResponsesForIssue,
   } = useDeliveryIssues();
 
   const [isResponseModalOpen, setResponseModalOpen] = useState(false);
   const [selectedIssue, setSelectedIssue] = useState(null);
+  const [editingResponse, setEditingResponse] = useState(null);
   const [expandedIssue, setExpandedIssue] = useState(null);
 
   // Fetch delivery issues and responses on component mount
@@ -29,14 +32,26 @@ const DeliveryIssuesSupportPanel = () => {
     fetchDeliveryResponses();
   }, []);
 
-  const openResponseModal = (issue) => {
+  const openResponseModal = (issue, response = null) => {
     setSelectedIssue(issue);
+    setEditingResponse(response);
     setResponseModalOpen(true);
   };
 
   const handleSaveResponse = async (formData) => {
-    await addDeliveryResponse(formData);
+    if (editingResponse) {
+      await updateDeliveryResponse(editingResponse._id, formData);
+    } else {
+      await addDeliveryResponse(formData);
+    }
     setResponseModalOpen(false);
+    setEditingResponse(null);
+  };
+
+  const handleDeleteResponse = async (responseId) => {
+    if (window.confirm("Are you sure you want to delete this response?")) {
+      await deleteDeliveryResponse(responseId);
+    }
   };
 
   const toggleExpandIssue = (id) => {
@@ -332,8 +347,26 @@ const DeliveryIssuesSupportPanel = () => {
                                               {response.status}
                                             </span>
                                           </div>
-                                          <div className="text-xs text-gray-500">
-                                            {new Date(response.createdAt).toLocaleString()}
+                                          <div className="flex items-center gap-2">
+                                            <div className="text-xs text-gray-500">
+                                              {new Date(response.createdAt).toLocaleString()}
+                                            </div>
+                                            <div className="flex gap-1">
+                                              <button
+                                                onClick={() => openResponseModal(issue, response)}
+                                                className="p-1.5 text-[#d87706] hover:text-[#b55309] hover:bg-[#d87706]/10 rounded transition-colors"
+                                                title="Edit Response"
+                                              >
+                                                <FaEdit className="text-xs" />
+                                              </button>
+                                              <button
+                                                onClick={() => handleDeleteResponse(response._id)}
+                                                className="p-1.5 text-red-600 hover:text-red-700 hover:bg-red-50 rounded transition-colors"
+                                                title="Delete Response"
+                                              >
+                                                <FaTrash className="text-xs" />
+                                              </button>
+                                            </div>
                                           </div>
                                         </div>
                                         <p className="text-gray-700 mb-2">{response.responseText}</p>
@@ -388,8 +421,12 @@ const DeliveryIssuesSupportPanel = () => {
       {/* Response Modal */}
       <DeliveryResponseModal
         isOpen={isResponseModalOpen}
-        onClose={() => setResponseModalOpen(false)}
+        onClose={() => {
+          setResponseModalOpen(false);
+          setEditingResponse(null);
+        }}
         issue={selectedIssue}
+        response={editingResponse}
         onSave={handleSaveResponse}
       />
     </div>

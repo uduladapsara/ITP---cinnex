@@ -56,20 +56,22 @@ const SearchControls = ({ search, setSearch, handleAddItem, handleReport }) => {
               <div className="absolute inset-0 -top-1 -left-1 bg-gradient-to-r from-transparent via-white/20 to-transparent transform -skew-x-12 -translate-x-full group-hover/btn:translate-x-full transition-transform duration-700"></div>
             </button>
 
-            {/* Report Button */}
+            {/* Modern PDF Report Button */}
             <button
               onClick={handleReport}
-              className="group/btn relative overflow-hidden bg-gradient-to-r from-[#b5530a] to-[#d87706] text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 px-6 py-4"
+              className="group/btn relative overflow-hidden bg-gradient-to-r from-red-500 via-red-600 to-red-700 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 px-6 py-4 border-2 border-red-400/30"
             >
-              <div className="absolute inset-0 bg-gradient-to-r from-[#d87706] to-[#b5530a] opacity-0 group-hover/btn:opacity-100 transition-opacity duration-300"></div>
+              <div className="absolute inset-0 bg-gradient-to-r from-red-600 via-red-700 to-red-800 opacity-0 group-hover/btn:opacity-100 transition-opacity duration-300"></div>
               <div className="relative flex items-center justify-center gap-3">
-                <div className="p-1 bg-white/20 rounded-lg group-hover/btn:bg-white/30 transition-colors duration-300">
+                <div className="p-1.5 bg-white/20 rounded-lg group-hover/btn:bg-white/30 transition-colors duration-300">
                   <FaFilePdf className="text-sm" />
                 </div>
-                <span className="text-sm sm:text-base">Report</span>
+                <span className="text-sm sm:text-base font-bold">Download PDF Report</span>
               </div>
-              {/* Button shine effect */}
-              <div className="absolute inset-0 -top-1 -left-1 bg-gradient-to-r from-transparent via-white/20 to-transparent transform -skew-x-12 -translate-x-full group-hover/btn:translate-x-full transition-transform duration-700"></div>
+              {/* Enhanced shine effect */}
+              <div className="absolute inset-0 -top-1 -left-1 bg-gradient-to-r from-transparent via-white/30 to-transparent transform -skew-x-12 -translate-x-full group-hover/btn:translate-x-full transition-transform duration-700"></div>
+              {/* Pulsing border effect */}
+              <div className="absolute inset-0 rounded-xl border-2 border-red-300/50 animate-pulse opacity-0 group-hover/btn:opacity-100 transition-opacity duration-300"></div>
             </button>
           </div>
         </div>
