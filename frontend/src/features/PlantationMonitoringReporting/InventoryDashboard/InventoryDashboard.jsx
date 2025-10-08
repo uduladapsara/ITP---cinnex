@@ -363,15 +363,143 @@ const InventoryDashboard = () => {
       if (formData.category === "final product" && parseFloat(formData.price) < 1) {
         newErrors.price = "⚠️ Final products typically have higher price points (at least $1.00)";
       }
+
+      // Price range validations by category
+      if (formData.category === "resource" && parseFloat(formData.price) > 1000) {
+        newErrors.price = "⚠️ Resource items usually cost less than $1,000. Please verify the price.";
+      }
+
+      if (formData.category === "final product" && parseFloat(formData.price) > 10000) {
+        newErrors.price = "⚠️ Final product price seems unusually high. Consider if this is correct.";
+      }
     }
 
-    // Duplicate Item Check (client-side approximation)
+    // Smart Reorder Level Validation
+    if (!newErrors.quantity && !newErrors.reorderLevel) {
+      const quantity = parseFloat(formData.quantity);
+      const reorderLevel = parseFloat(formData.reorderLevel);
+
+      if (reorderLevel >= quantity) {
+        newErrors.reorderLevel = "⚠️ Reorder level should be less than current quantity to trigger restocking alerts effectively";
+      }
+
+      if (quantity > 0 && reorderLevel === 0) {
+        newErrors.reorderLevel = "⚠️ Setting reorder level to 0 means no restocking alerts. Consider setting a positive value for better inventory management";
+      }
+
+      // Minimum reorder level check
+      if (reorderLevel > 0 && reorderLevel < 1) {
+        newErrors.reorderLevel = "⚠️ Reorder level should be at least 1 unit for practical inventory management";
+      }
+    }
+
+    // Duplicate Item Check - Enhanced
     if (!newErrors.name && selectedItem === null) {
       const existingItem = inventory.find(item =>
         item.name.toLowerCase().trim() === formData.name.toLowerCase().trim()
       );
       if (existingItem) {
         newErrors.name = "⚠️ An item with this name already exists. Consider using a different name or editing the existing item.";
+      }
+    }
+
+    // Cross-field validation for expiry date with manufacture date
+    if (formData.manufactureDate && formData.expireDate && !newErrors.manufactureDate && !newErrors.expireDate) {
+      const manufactureDate = new Date(formData.manufactureDate);
+      const expireDate = new Date(formData.expireDate);
+
+      // For harvest items, expiry should be reasonable (not too short or too long)
+      if (formData.category === "harvest") {
+        const daysDifference = Math.ceil((expireDate - manufactureDate) / (1000 * 60 * 60 * 24));
+        if (daysDifference < 30) {
+          newErrors.expireDate = "⚠️ Harvest items typically have longer shelf life. Consider if 30+ days is appropriate.";
+        } else if (daysDifference > 365) {
+          newErrors.expireDate = "⚠️ Harvest items usually don't last more than a year. Please verify the expiry date.";
+        }
+      }
+
+      // For final products, ensure reasonable production timeline
+      if (formData.category === "final product") {
+        const daysDifference = Math.ceil((expireDate - manufactureDate) / (1000 * 60 * 60 * 24));
+        if (daysDifference < 7) {
+          newErrors.expireDate = "⚠️ Final products should have at least a week of shelf life after production.";
+        }
+      }
+    }
+
+    // Quantity and Price Logic Validation
+    if (!newErrors.quantity && !newErrors.price) {
+      const quantity = parseFloat(formData.quantity);
+      const price = parseFloat(formData.price);
+      const totalValue = quantity * price;
+
+      // Very high quantity warnings
+      if (quantity > 10000) {
+        newErrors.submit = "⚠️ Quantity exceeds 10,000 units. Please verify this is correct.";
+      }
+
+      // Very low quantity for high-value items
+      if (quantity < 5 && price > 100) {
+        newErrors.submit = "⚠️ High-value item with very low quantity. Consider if this quantity is sufficient.";
+      }
+
+      // Bulk discount consideration for large quantities
+      if (quantity > 1000 && price < 1) {
+        newErrors.submit = "⚠️ Large quantity with very low unit price. Consider if bulk pricing applies.";
+      }
+    }
+
+    // Supplier validation for specific categories
+    if (formData.category === "resource" && !formData.supplier?.trim()) {
+      newErrors.supplier = "⚠️ Supplier information is recommended for resource items to track procurement sources.";
+    }
+
+    // Description quality check
+    if (formData.description?.trim() && formData.description.trim().length > 0) {
+      const wordCount = formData.description.trim().split(/\s+/).length;
+      const charCount = formData.description.trim().length;
+
+      if (wordCount < 3 && charCount < 20) {
+        newErrors.description = "⚠️ Description is too brief. Consider adding more details for better inventory management.";
+      }
+
+      // Check for meaningful content
+      if (!/[a-zA-Z]/.test(formData.description.trim())) {
+        newErrors.description = "⚠️ Description should contain meaningful text, not just symbols or numbers.";
+      }
+    }
+
+    // Final Data Quality Checks
+    if (Object.keys(newErrors).length === 0) {
+      // Check for suspicious data patterns
+      const suspiciousPatterns = [];
+
+      // Very high precision prices (more than 2 decimal places)
+      if (formData.price && (formData.price.toString().split('.')[1] || '').length > 2) {
+        suspiciousPatterns.push("Price has more than 2 decimal places");
+      }
+
+      // Round numbers that look like they should be whole
+      if (formData.quantity && formData.quantity % 1 !== 0 && formData.unit === 'pieces') {
+        suspiciousPatterns.push("Quantity should be whole numbers for pieces");
+      }
+
+      // Very long names
+      if (formData.name && formData.name.length > 50) {
+        suspiciousPatterns.push("Item name is very long - consider shortening for better readability");
+      }
+
+      // Show warnings for suspicious patterns
+      if (suspiciousPatterns.length > 0) {
+        newErrors.submit = "⚠️ Data Quality Notice: " + suspiciousPatterns.join(". ");
+      }
+
+      // Success path validation - ensure all critical fields are properly filled
+      const criticalFields = ['name', 'quantity', 'unit', 'category', 'price', 'reorderLevel'];
+      const missingCritical = criticalFields.filter(field => !formData[field] || formData[field] === '');
+
+      if (missingCritical.length > 0) {
+        newErrors.submit = `⚠️ Critical Error: Missing required fields: ${missingCritical.join(', ')}`;
       }
     }
 
