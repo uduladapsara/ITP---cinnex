@@ -280,7 +280,7 @@ const AddEditInventoryModal = ({
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Manufacture Date *
+                Manufacture Date
               </label>
               <input
                 type="date"
@@ -290,13 +290,14 @@ const AddEditInventoryModal = ({
                 onChange={(e) => setFormData({ ...formData, manufactureDate: e.target.value })}
                 className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent text-sm"
               />
+              <p className="mt-1 text-xs text-gray-500">Only today's date is allowed</p>
               {errors.manufactureDate && (
                 <p className="mt-1 text-xs text-red-600">{errors.manufactureDate}</p>
               )}
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Expire Date *
+                Expire Date
               </label>
               <input
                 type="date"
@@ -395,10 +396,8 @@ const AddEditInventoryModal = ({
                 formData.unit,
                 formData.category,
                 formData.price,
-                formData.reorderLevel,
-                formData.manufactureDate,
-                formData.expireDate
-              ].filter(Boolean).length}/8 required fields
+                formData.reorderLevel
+              ].filter(Boolean).length}/6 required fields
             </span>
           </div>
           <div className="w-full bg-gray-200 rounded-full h-1 mt-1">
@@ -411,10 +410,8 @@ const AddEditInventoryModal = ({
                   formData.unit,
                   formData.category,
                   formData.price,
-                  formData.reorderLevel,
-                  formData.manufactureDate,
-                  formData.expireDate
-                ].filter(Boolean).length / 8) * 100}%`
+                  formData.reorderLevel
+                ].filter(Boolean).length / 6) * 100}%`
               }}
             ></div>
           </div>

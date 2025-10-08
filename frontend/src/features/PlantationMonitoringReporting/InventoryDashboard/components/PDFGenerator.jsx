@@ -3,20 +3,31 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
 const PDFGenerator = () => {
-  const generateInventoryPDF = (inventoryData, reportType = 'comprehensive') => {
+  const generateInventoryPDF = async (inventoryData, reportType = 'comprehensive') => {
     const doc = new jsPDF('p', 'mm', 'a4');
     const pageWidth = doc.internal.pageSize.getWidth();
     
     // Modern color scheme - Updated colors
-    const primaryColor = '#1e40af'; // Professional blue
-    const accentColor = '#1e3a8a'; // Dark blue
+    const primaryColor = '#d87706'; // Orange
+    const accentColor = '#b5530a'; // Brown
     const successColor = '#059669'; // Green
     const warningColor = '#d97706'; // Orange
     const dangerColor = '#dc2626'; // Red
     const textColor = '#374151'; // Dark gray
     
+    // Load logo image
+    const loadLogo = () => {
+      return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
+        img.onload = () => resolve(img);
+        img.onerror = reject;
+        img.src = '/logo_trans2.png';
+      });
+    };
+
     // Add clean header
-    const addHeader = () => {
+    const addHeader = async () => {
       const now = new Date();
       const dateStr = now.toLocaleDateString('en-US', { 
         year: 'numeric', 
@@ -24,30 +35,45 @@ const PDFGenerator = () => {
         day: 'numeric' 
       });
       
-      // Company header
+      // Company header background
       doc.setFillColor(primaryColor);
-      doc.rect(0, 0, pageWidth, 12, 'F');
+      doc.rect(0, 0, pageWidth, 25, 'F');
       
+      // Add logo image
+      try {
+        const logoImg = await loadLogo();
+        // Add logo to PDF (resize to fit header)
+        doc.addImage(logoImg, 'PNG', 10, 5, 15, 15);
+      } catch (error) {
+        console.log('Logo loading failed, using text fallback');
+        // Fallback text logo
+        doc.setTextColor(255, 255, 255);
+        doc.setFontSize(12);
+        doc.setFont('helvetica', 'bold');
+        doc.text('LOGO', 17.5, 12, { align: 'center' });
+      }
+      
+      // Company name
       doc.setTextColor(255, 255, 255);
-      doc.setFontSize(10);
+      doc.setFontSize(12);
       doc.setFont('helvetica', 'bold');
-      doc.text('CINNEX PLANTATION MANAGEMENT', 20, 8);
+      doc.text('CINNEX PLANTATION MANAGEMENT', 35, 12);
       
       doc.setFontSize(8);
       doc.setFont('helvetica', 'normal');
-      doc.text(dateStr, pageWidth - 20, 8, { align: 'right' });
+      doc.text(dateStr, pageWidth - 20, 12, { align: 'right' });
       
       // Report title
       doc.setTextColor(primaryColor);
       doc.setFontSize(16);
       doc.setFont('helvetica', 'bold');
       const title = reportType === 'comprehensive' ? 'Inventory Report' : 'Inventory Summary';
-      doc.text(title, 20, 25);
+      doc.text(title, 20, 40);
       
       // Subtle separator
       doc.setDrawColor(primaryColor);
       doc.setLineWidth(0.5);
-      doc.line(20, 28, pageWidth - 20, 28);
+      doc.line(20, 43, pageWidth - 20, 43);
     };
 
     // Add clean footer
@@ -67,7 +93,7 @@ const PDFGenerator = () => {
 
     // Add key metrics
     const addKeyMetrics = (data) => {
-      let yPos = 35;
+      let yPos = 55;
 
       // Calculate metrics
       const totalItems = data.length;
@@ -149,7 +175,7 @@ const PDFGenerator = () => {
           lineWidth: 0.1,
         },
         headStyles: {
-          fillColor: [30, 64, 175], // Updated to match new blue theme
+          fillColor: [216, 119, 6], // Updated to match new orange theme
           textColor: [255, 255, 255],
           fontSize: 8,
           fontStyle: 'bold',
@@ -231,21 +257,26 @@ const PDFGenerator = () => {
       doc.setFont('helvetica', 'bold');
       doc.text('Inventory Manager', 20, yPos + 22);
 
-      // Company seal (simple circle)
+      // Company seal (matching header logo)
       doc.setFillColor(primaryColor);
       doc.setDrawColor(primaryColor);
       doc.circle(120, yPos + 10, 8, 'FD');
       
+      // Add C in the seal
       doc.setTextColor(255, 255, 255);
-      doc.setFontSize(6);
+      doc.setFontSize(8);
       doc.setFont('helvetica', 'bold');
-      doc.text('CINNEX', 120, yPos + 12, { align: 'center' });
+      doc.text('C', 120, yPos + 12, { align: 'center' });
+      
+      // Small leaf accent in seal
+      doc.setFillColor(255, 255, 255);
+      doc.triangle(125, yPos + 8, 127, yPos + 6, 129, yPos + 8, 'FD');
 
       return yPos + 35;
     };
 
     // Main PDF generation flow
-    addHeader();
+    await addHeader();
     let currentY = addKeyMetrics(inventoryData);
     currentY = addInventoryTable(inventoryData, currentY);
     

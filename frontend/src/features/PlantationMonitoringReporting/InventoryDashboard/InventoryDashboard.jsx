@@ -147,7 +147,7 @@ const InventoryDashboard = () => {
       description: "",
       supplier: "",
       reorderLevel: "",
-      manufactureDate: "",
+      manufactureDate: new Date().toISOString().split('T')[0], // Set to today's date
       expireDate: "",
     });
     setModalOpen(true);
@@ -268,49 +268,45 @@ const InventoryDashboard = () => {
     today.setHours(0, 0, 0, 0);
     const todayString = today.toISOString().split('T')[0];
 
-    // Manufacture Date Validation
-    if (!formData.manufactureDate) {
-      newErrors.manufactureDate = "⚠️ Manufacture date is required";
-    } else if (!/^\d{4}-\d{2}-\d{2}$/.test(formData.manufactureDate)) {
-      newErrors.manufactureDate = "⚠️ Please enter a valid manufacture date";
-    } else {
-      const manufactureDate = new Date(formData.manufactureDate);
-      manufactureDate.setHours(0, 0, 0, 0);
+    // Manufacture Date Validation - Only today's date allowed
+    if (formData.manufactureDate) {
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(formData.manufactureDate)) {
+        newErrors.manufactureDate = "⚠️ Please enter a valid manufacture date";
+      } else {
+        const manufactureDate = new Date(formData.manufactureDate);
+        manufactureDate.setHours(0, 0, 0, 0);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
 
-      if (manufactureDate < today) {
-        newErrors.manufactureDate = "⚠️ Manufacture date cannot be in the past. Please select today or a future date";
-      }
-
-      // Check if manufacture date is not too far in the future (max 2 years)
-      const maxManufactureDate = new Date();
-      maxManufactureDate.setFullYear(maxManufactureDate.getFullYear() + 2);
-      if (manufactureDate > maxManufactureDate) {
-        newErrors.manufactureDate = "⚠️ Manufacture date cannot be more than 2 years from now";
+        // Must be exactly today's date
+        if (manufactureDate.getTime() !== today.getTime()) {
+          newErrors.manufactureDate = "⚠️ Manufacture date must be today's date only";
+        }
       }
     }
 
-    // Expire Date Validation
-    if (!formData.expireDate) {
-      newErrors.expireDate = "⚠️ Expire date is required";
-    } else if (!/^\d{4}-\d{2}-\d{2}$/.test(formData.expireDate)) {
-      newErrors.expireDate = "⚠️ Please enter a valid expire date";
-    } else {
-      const expireDate = new Date(formData.expireDate);
-      expireDate.setHours(0, 0, 0, 0);
+    // Expire Date Validation - Made optional
+    if (formData.expireDate) {
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(formData.expireDate)) {
+        newErrors.expireDate = "⚠️ Please enter a valid expire date";
+      } else {
+        const expireDate = new Date(formData.expireDate);
+        expireDate.setHours(0, 0, 0, 0);
 
-      if (expireDate < today) {
-        newErrors.expireDate = "⚠️ Expire date cannot be in the past. Please select today or a future date";
-      }
+        if (expireDate < today) {
+          newErrors.expireDate = "⚠️ Expire date cannot be in the past. Please select today or a future date";
+        }
 
-      // Check if expire date is not too far in the future (max 5 years)
-      const maxExpireDate = new Date();
-      maxExpireDate.setFullYear(maxExpireDate.getFullYear() + 5);
-      if (expireDate > maxExpireDate) {
-        newErrors.expireDate = "⚠️ Expire date cannot be more than 5 years from now";
+        // Check if expire date is not too far in the future (max 5 years)
+        const maxExpireDate = new Date();
+        maxExpireDate.setFullYear(maxExpireDate.getFullYear() + 5);
+        if (expireDate > maxExpireDate) {
+          newErrors.expireDate = "⚠️ Expire date cannot be more than 5 years from now";
+        }
       }
     }
 
-    // Cross-validation between dates
+    // Cross-validation between dates (only if both dates are provided)
     if (formData.manufactureDate && formData.expireDate && !newErrors.manufactureDate && !newErrors.expireDate) {
       const manufactureDate = new Date(formData.manufactureDate);
       const expireDate = new Date(formData.expireDate);
@@ -400,7 +396,7 @@ const InventoryDashboard = () => {
         description: "",
         supplier: "",
         reorderLevel: "",
-        manufactureDate: "",
+        manufactureDate: new Date().toISOString().split('T')[0], // Reset to today's date
         expireDate: "",
       });
       setErrors({});
